@@ -10,7 +10,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
+// KMK -->
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Search
+// KMK <--
 import androidx.compose.material3.AlertDialog
+// KMK -->
+import androidx.compose.material3.IconButton
+// KMK <--
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -56,6 +63,15 @@ fun ChapterHeader(
         searchResultIds.mapNotNull { id -> chapters.firstOrNull { it.id == id } }
     }
 
+    // KMK -->
+    val openSearchDialog = {
+        showActionsDialog = false
+        chapterNumber = ""
+        searchError = null
+        showSearchDialog = true
+    }
+    // KMK <--
+
     if (showActionsDialog) {
         AlertDialog(
             onDismissRequest = { showActionsDialog = false },
@@ -72,12 +88,9 @@ fun ChapterHeader(
                         Text(stringResource(MR.strings.action_filter))
                     }
                     TextButton(
-                        onClick = {
-                            showActionsDialog = false
-                            chapterNumber = ""
-                            searchError = null
-                            showSearchDialog = true
-                        },
+                        // KMK -->
+                        onClick = openSearchDialog,
+                        // KMK <--
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text(stringResource(MR.strings.search_chapter))
@@ -107,7 +120,9 @@ fun ChapterHeader(
                         modifier = Modifier.fillMaxWidth(),
                         label = { Text(stringResource(MR.strings.show_chapter_number)) },
                         singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        // KMK -->
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        // KMK <--
                     )
                     val errorResource = when (searchError) {
                         ChapterSearchError.INVALID_NUMBER -> MR.strings.local_invalid_format
@@ -127,24 +142,24 @@ fun ChapterHeader(
                 TextButton(
                     enabled = chapterNumber.isNotBlank(),
                     onClick = {
-                        val number = chapterNumber.trim().replace(',', '.').toDoubleOrNull()
-                        when {
-                            number == null || !number.isFinite() -> {
-                                searchError = ChapterSearchError.INVALID_NUMBER
+                        // KMK -->
+                        val chapterRange = parseChapterSearchRange(chapterNumber)
+                        if (chapterRange == null) {
+                            searchError = ChapterSearchError.INVALID_NUMBER
+                        } else {
+                            val matchingChapters = chapters.filter { item ->
+                                val number = item.chapter.chapterNumber
+                                number.isFinite() && number in chapterRange
                             }
-                            else -> {
-                                val matchingChapters = chapters.filter {
-                                    it.chapter.chapterNumber == number
-                                }
-                                if (matchingChapters.isEmpty()) {
-                                    searchError = ChapterSearchError.NOT_FOUND
-                                } else {
-                                    searchResultIds = matchingChapters.map { it.id }
-                                    searchError = null
-                                    showSearchDialog = false
-                                }
+                            if (matchingChapters.isEmpty()) {
+                                searchError = ChapterSearchError.NOT_FOUND
+                            } else {
+                                searchResultIds = matchingChapters.map { it.id }
+                                searchError = null
+                                showSearchDialog = false
                             }
                         }
+                        // KMK <--
                     },
                 ) {
                     Text(stringResource(MR.strings.action_search))
@@ -236,8 +251,56 @@ fun ChapterHeader(
 
             MissingChaptersWarning(missingChapterCount)
         }
+
+        // KMK -->
+        IconButton(
+            enabled = enabled,
+            onClick = openSearchDialog,
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Search,
+                contentDescription = stringResource(MR.strings.action_search),
+            )
+        }
+        // KMK <--
     }
 }
+
+// KMK -->
+private fun parseChapterSearchRange(input: String): ClosedFloatingPointRange<Double>? {
+    val normalized = input.trim()
+        .replace('–', '-')
+        .replace('—', '-')
+        .replace('−', '-')
+        .replace(Regex("""(?i)^(?:de|entre|from|between)\s+"""), "")
+        .replace(
+            Regex("""(?i)\s*(?:tiret|trait\s+d['’]union|jusqu['’]à|à|au|et|to|through|until)\s*"""),
+            "-",
+        )
+        .replace(Regex("""\s+"""), "")
+
+    val numberPattern = """-?\d+(?:[.,]\d+)?"""
+    val rangeMatch = Regex("""^($numberPattern)-($numberPattern)$""").matchEntire(normalized)
+    val startText: String
+    val endText: String
+
+    if (rangeMatch != null) {
+        startText = rangeMatch.groupValues[1]
+        endText = rangeMatch.groupValues[2]
+    } else if (Regex("""^$numberPattern$""").matches(normalized)) {
+        startText = normalized
+        endText = normalized
+    } else {
+        return null
+    }
+
+    val start = startText.replace(',', '.').toDoubleOrNull()?.takeIf { it.isFinite() } ?: return null
+    val end = endText.replace(',', '.').toDoubleOrNull()?.takeIf { it.isFinite() } ?: return null
+    if (start > end) return null
+
+    return start..end
+}
+// KMK <--
 
 private enum class ChapterSearchError {
     INVALID_NUMBER,
