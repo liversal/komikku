@@ -779,7 +779,13 @@ private fun MangaScreenSmallImpl(
                             enabled = !isAnySelected,
                             chapterCount = chapters.size,
                             missingChapterCount = missingChapterCount,
-                            onClick = onFilterClicked,
+                            chapters = state.chapters,
+                            onFilterClick = onFilterClicked,
+                            onOpenChapter = onChapterClicked,
+                            onDownloadChapter = onDownloadChapter,
+                            canDownloadChapter = { item ->
+                                !(state.mergedData?.manga?.get(item.chapter.mangaId) ?: state.manga).isLocal()
+                            },
                         )
                     }
 
@@ -1214,7 +1220,13 @@ private fun MangaScreenLargeImpl(
                                     enabled = !isAnySelected,
                                     chapterCount = chapters.size,
                                     missingChapterCount = missingChapterCount,
-                                    onClick = onFilterButtonClicked,
+                                    chapters = state.chapters,
+                                    onFilterClick = onFilterButtonClicked,
+                                    onOpenChapter = onChapterClicked,
+                                    onDownloadChapter = onDownloadChapter,
+                                    canDownloadChapter = { item ->
+                                        !(state.mergedData?.manga?.get(item.chapter.mangaId) ?: state.manga).isLocal()
+                                    },
                                 )
                             }
 
