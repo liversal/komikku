@@ -76,7 +76,7 @@ fun TabbedDialog(
             HorizontalDivider()
 
             HorizontalPager(
-                modifier = Modifier.animateContentSize(),
+                // retirer .animateContentSize()
                 state = pagerState,
                 verticalAlignment = Alignment.Top,
                 pageContent = { page -> content(page) },
