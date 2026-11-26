@@ -75,6 +75,7 @@
     <string name="search_chapter">Search chapter</string>
     <string name="chapter_list_actions">Chapter list</string>
     <string name="chapter_search_results">Search results</string>
+    <string name="last_downloaded_chapter">Last downloaded chapter: %1$s</string>
     <string name="action_search_hint">Search…</string>
     <string name="action_search_settings">Search settings</string>
     <string name="action_global_search">Global search</string>
