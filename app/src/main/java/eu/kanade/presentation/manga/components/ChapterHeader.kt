@@ -223,13 +223,13 @@ fun ChapterHeader(
     }
 
     // KMK -->
-val lastDownloadedChapter = remember(chapters) {
-    chapters
-        .filter { it.downloadState == Download.State.DOWNLOADED }
-        .maxOfOrNull { it.chapter.chapterNumber }
-        ?.takeIf { it >= 0 }
-}
-// KMK <--
+    val lastDownloadedChapter = remember(chapters) {
+        chapters
+            .filter { it.downloadState == Download.State.DOWNLOADED }
+            .maxOfOrNull { it.chapter.chapterNumber }
+            ?.takeIf { it >= 0 }
+    }
+    // KMK <--
 
     Row(
         modifier = modifier
@@ -246,23 +246,23 @@ val lastDownloadedChapter = remember(chapters) {
             verticalArrangement = Arrangement.spacedBy(MaterialTheme.padding.extraSmall),
         ) {
             Text(
-    text = when {
-        // KMK -->
-        lastDownloadedChapter != null -> stringResource(
-            MR.strings.last_downloaded_chapter,
-            if (lastDownloadedChapter % 1.0 == 0.0) {
-                lastDownloadedChapter.toInt().toString()
-            } else {
-                lastDownloadedChapter.toString()
-            },
-        )
-        // KMK <--
-        chapterCount == null -> stringResource(MR.strings.chapters)
-        else -> pluralStringResource(MR.plurals.manga_num_chapters, count = chapterCount, chapterCount)
-    },
-    style = MaterialTheme.typography.titleMedium,
-    color = MaterialTheme.colorScheme.onBackground,
-)
+                text = when {
+                    // KMK -->
+                    lastDownloadedChapter != null -> stringResource(
+                        MR.strings.last_downloaded_chapter,
+                        if (lastDownloadedChapter % 1.0 == 0.0) {
+                            lastDownloadedChapter.toInt().toString()
+                        } else {
+                            lastDownloadedChapter.toString()
+                        },
+                    )
+                    // KMK <--
+                    chapterCount == null -> stringResource(MR.strings.chapters)
+                    else -> pluralStringResource(MR.plurals.manga_num_chapters, count = chapterCount, chapterCount)
+                },
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
 
             MissingChaptersWarning(missingChapterCount)
         }
