@@ -1,12 +1,10 @@
 package eu.kanade.presentation.components
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -19,16 +17,15 @@ import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.coroutines.launch
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.components.material.TabText
 import tachiyomi.presentation.core.i18n.stringResource
@@ -44,6 +41,7 @@ fun TabbedDialog(
     tabTitles: ImmutableList<String>,
     modifier: Modifier = Modifier,
     tabOverflowMenuContent: (@Composable ColumnScope.(() -> Unit) -> Unit)? = null,
+    // TEST: paramètre conservé pour que les appelants compilent, mais non utilisé
     pagerState: PagerState = rememberPagerState { tabTitles.size },
     content: @Composable (Int) -> Unit,
 ) {
@@ -51,20 +49,21 @@ fun TabbedDialog(
         modifier = modifier,
         onDismissRequest = onDismissRequest,
     ) {
-        val scope = rememberCoroutineScope()
+        // TEST: page courante sans pager
+        var testPage by remember { mutableIntStateOf(0) }
 
         Column {
             Row {
                 PrimaryTabRow(
                     modifier = Modifier.weight(1f),
-                    selectedTabIndex = pagerState.currentPage,
+                    selectedTabIndex = testPage,
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     divider = {},
                 ) {
                     tabTitles.fastForEachIndexed { index, tab ->
                         Tab(
-                            selected = pagerState.currentPage == index,
-                            onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
+                            selected = testPage == index,
+                            onClick = { testPage = index },
                             text = { TabText(text = tab) },
                             unselectedContentColor = MaterialTheme.colorScheme.onSurface,
                         )
@@ -75,12 +74,8 @@ fun TabbedDialog(
             }
             HorizontalDivider()
 
-            HorizontalPager(
-                // retirer .animateContentSize()
-                state = pagerState,
-                verticalAlignment = Alignment.Top,
-                pageContent = { page -> content(page) },
-            )
+            // TEST: remplace HorizontalPager
+            Box { content(testPage) }
         }
     }
 }
