@@ -17,6 +17,7 @@
     <string name="action_search">Rechercher</string>
     <string name="search_chapter">Rechercher un chapitre</string>
     <string name="chapter_list_actions">Liste des chapitres</string>
+    <string name="last_downloaded_chapter">Dernier chapitre téléchargé:%1$s</string>
     <string name="chapter_search_results">Résultats de recherche</string>
     <string name="action_select_all">Tout sélectionner</string>
     <string name="action_mark_as_read">Marquer comme lu</string>
