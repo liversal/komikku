@@ -149,13 +149,13 @@ fun CheckboxItem(label: String, pref: Preference<Boolean>) {
 fun CheckboxItem(label: String, checked: Boolean, onClick: () -> Unit) {
     BaseSettingsItem(
         label = label,
-        widget = {
-            Checkbox(
-                checked = checked,
-                onCheckedChange = null,
-            )
-        },
+        widget = { Checkbox(checked = checked, onCheckedChange = null) },
         onClick = onClick,
+        modifier = Modifier.toggleable(
+            value = checked,
+            role = Role.Checkbox,
+            onValueChange = { onClick() },
+        ),
     )
 }
 
@@ -163,13 +163,13 @@ fun CheckboxItem(label: String, checked: Boolean, onClick: () -> Unit) {
 fun RadioItem(label: String, selected: Boolean, onClick: () -> Unit) {
     BaseSettingsItem(
         label = label,
-        widget = {
-            RadioButton(
-                selected = selected,
-                onClick = null,
-            )
-        },
+        widget = { RadioButton(selected = selected, onClick = null) },
         onClick = onClick,
+        modifier = Modifier.selectable(
+            selected = selected,
+            role = Role.RadioButton,
+            onClick = onClick,
+        ),
     )
 }
 
@@ -342,22 +342,28 @@ fun TriStateItem(
     onClick: ((TriState) -> Unit)?,
 ) {
     Row(
-        modifier = Modifier
-            .clickable(
-                enabled = enabled && onClick != null,
-                onClick = {
-                    when (state) {
-                        TriState.DISABLED -> onClick?.invoke(TriState.ENABLED_IS)
-                        TriState.ENABLED_IS -> onClick?.invoke(TriState.ENABLED_NOT)
-                        TriState.ENABLED_NOT -> onClick?.invoke(TriState.DISABLED)
-                    }
-                },
-            )
-            .fillMaxWidth()
-            .padding(
-                horizontal = SettingsItemsPaddings.Horizontal,
-                vertical = SettingsItemsPaddings.Vertical,
-            ),
+    modifier = Modifier
+        .triStateToggleable(
+            state = when (state) {
+                TriState.DISABLED -> ToggleableState.Off
+                TriState.ENABLED_IS -> ToggleableState.On
+                TriState.ENABLED_NOT -> ToggleableState.Indeterminate
+            },
+            enabled = enabled && onClick != null,
+            role = Role.Checkbox,
+            onClick = {
+                when (state) {
+                    TriState.DISABLED -> onClick?.invoke(TriState.ENABLED_IS)
+                    TriState.ENABLED_IS -> onClick?.invoke(TriState.ENABLED_NOT)
+                    TriState.ENABLED_NOT -> onClick?.invoke(TriState.DISABLED)
+                }
+            },
+        )
+        .fillMaxWidth()
+        .padding(
+            horizontal = SettingsItemsPaddings.Horizontal,
+            vertical = SettingsItemsPaddings.Vertical,
+        ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(MaterialTheme.padding.large),
     ) {
@@ -466,10 +472,10 @@ private fun BaseSettingsItem(
     label: String,
     widget: @Composable RowScope.() -> Unit,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier.clickable(onClick = onClick),
 ) {
     Row(
-        modifier = Modifier
-            .clickable(onClick = onClick)
+        modifier = modifier
             .fillMaxWidth()
             .padding(
                 horizontal = SettingsItemsPaddings.Horizontal,
@@ -479,9 +485,6 @@ private fun BaseSettingsItem(
         horizontalArrangement = Arrangement.spacedBy(24.dp),
     ) {
         widget(this)
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-        )
+        Text(text = label, style = MaterialTheme.typography.bodyMedium)
     }
 }
